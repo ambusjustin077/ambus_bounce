@@ -11,6 +11,12 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
     - name: Set up NodeJS
       uses: actions/setup-node@v4
       with:
@@ -22,10 +28,4 @@ jobs:
     - name: Initialize and Build WebAPK
       run: |
         bubblewrap init --manifest="https://github.io" --meta=none --yes
-        bubblewrap build --skipSigning
-
-    - name: Upload Finished APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: web-app-apk
-        path: ./*.apk
+        bubblewrap build --skipSigning --yes
