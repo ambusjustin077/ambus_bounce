@@ -1,4 +1,4 @@
-name: Convert Web App to APK
+name: Convert Web App to APK (Fail-Safe)
 
 on:
   workflow_dispatch:
@@ -17,10 +17,39 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Build Android App (TWA)
-      uses: corgito/twa-manifest-action@v1
+    - name: Set up NodeJS
+      uses: actions/setup-node@v4
       with:
-        url: 'https://github.io'
+        node-version: '18'
+
+    - name: Install Bubblewrap CLI
+      run: npm install -g @bubblewrap/cli
+
+    # Generates a clean local configuration profile to bypass web fetching errors
+    - name: Generate Local TWA Config
+      run: |
+        echo '{
+          "packageId": "com.ambusjustin077.ambus_bounce",
+          "host": "ambusjustin077.github.io",
+          "name": "Ambus Bounce",
+          "shortName": "Bounce",
+          "themeColor": "#000000",
+          "backgroundColor": "#000000",
+          "startUrl": "/ambus_bounce/",
+          "iconUrl": "https://github.io",
+          "fallbackType": "customtabs",
+          "features": {},
+          "alphaDependencies": false,
+          "signingKey": {
+            "path": "./android.keystore",
+            "alias": "android"
+          },
+          "generatorApp": "bubblewrap"
+        }' > twa-manifest.json
+
+    - name: Build Android App (APK)
+      run: |
+        bubblewrap build --skipSigning --yes
 
     - name: Upload Finished APK
       uses: actions/upload-artifact@v4
